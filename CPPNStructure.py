@@ -261,17 +261,4 @@ class Genotype:  # Genotype class contains all mutation/evolutionary method/all 
 		return CPPNList[self.outputIndex]  # returns the output node of CPPN
 
 
-# all code below this is just used for testing
-'''
-x = Genotype(4)
-for i in range(50):
-	x.nodeMutate()
-x.makeConnection(0,4, 10)
-x.inputValues([0,1,2,3])
-CPPN = x.getCPPNNodes()
 
-
-print(x)
-
-print(CPPN.evaluateCPPN())
-'''
