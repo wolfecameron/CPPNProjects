@@ -9,10 +9,12 @@ matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 from matplotlib import colors
 from scipy.special import expit
-
+import random
 NGEN = 0
 NUMX = 0
 NUMY = 0
+
+POPSIZE = 25
 
 try:
     NGEN = int(raw_input("How many generations would you like to evolve the picture?"))
@@ -25,9 +27,7 @@ try:
         if(tmp[i] == '-'):
             NUMX = int(tmp[:i])
             NUMY = int(tmp[i + 1:])
-            print(NUMX)
-            print(NUMY)
-            raw_input("correct?")
+        
 except:
     NUMX = 200
     NUMY = 200
@@ -65,8 +65,29 @@ for y in range(0, NUMY):
         normY.append((y - MEAN) / STD)
 
 
-def eval_genomes(genomes, config):
+#stores all individuals throughout evolution
+INDIVIDUALS = []
 
+def eval_genomes(genomes, config):
+    for genome_id,genome in genomes:
+        genome.fitness = 0
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        outList = []
+        # must unzip all the elements and run the network for each
+        # input in input list
+        for z in range(len(xIn)):
+            # always passes output through sigmoid
+            in_tuple = (normX[z], normY[z])
+            x = sigmoid_act(net.activate(in_tuple)[0])
+            outList.append(x)
+
+        newAr = np.array(outList, copy = True)
+        INDIVIDUALS.append(newAr)
+
+        genome.fitness += random.random()
+
+
+'''
     for genome_id, genome in genomes:
         genome.fitness = 0
         net = neat.nn.FeedForwardNetwork.create(genome, config)
@@ -90,7 +111,7 @@ def eval_genomes(genomes, config):
             genome.fitness = 0
             print("A non-integer for fitness was entered. A value of 0 was assigned to genome fitness.")
 
-
+'''
 
 # runs the evolver
 config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -107,3 +128,12 @@ p.add_reporter(stats)
 
 # Run for 100 generations.
 winner = p.run(eval_genomes, n=NGEN)
+
+for ind in range((NGEN-1)*POPSIZE,NGEN*POPSIZE):
+    outList = INDIVIDUALS[ind]
+    plt.ion()
+    fig, ax = plt.subplots()
+    x = np.array(outList, copy=True)
+    im = ax.imshow(-x.reshape((NUMX, NUMY)).T, cmap='gray',
+                       interpolation='none', norm=colors.Normalize(vmin=-1, vmax=0))
+    raw_input()
